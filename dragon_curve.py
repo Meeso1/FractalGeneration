@@ -30,62 +30,91 @@ def generate_dragon_sequence(iterations: int) -> str:
     return sequence
 
 
-def sequence_to_points(sequence: str) -> np.ndarray:
+def sequence_to_complex_points(sequence: str, angle: float = np.pi / 2) -> np.ndarray:
+    """
+    Convert an L-system sequence to complex coordinate points using turtle graphics.
+    
+    Interprets the string as turtle graphics commands:
+    - F, G: move forward
+    - +: turn left by angle
+    - -: turn right by angle
+    
+    Args:
+        sequence: The L-system string to interpret
+        angle: The rotation angle in radians (default: π/2 for 90 degrees)
+    
+    Returns:
+        A 1D array of complex numbers representing points.
+    """
+    # Start at origin, facing right (direction = 1+0j)
+    position = 0.0 + 0.0j
+    direction = 1.0 + 0.0j
+    
+    # Rotation factors for + and -
+    turn_left = np.exp(1j * angle)
+    turn_right = np.exp(-1j * angle)
+    
+    # Store all points
+    points = [position]
+    
+    for char in sequence:
+        if char == "F" or char == "G":
+            # Move forward
+            position = position + direction
+            points.append(position)
+        elif char == "+":
+            # Turn left (counterclockwise)
+            direction = direction * turn_left
+        elif char == "-":
+            # Turn right (clockwise)
+            direction = direction * turn_right
+    
+    return np.array(points)
+
+
+def complex_to_real_points(complex_points: np.ndarray) -> np.ndarray:
+    """
+    Convert complex points to real coordinate array.
+    
+    Args:
+        complex_points: A 1D array of complex numbers
+    
+    Returns:
+        A 2xn array defining points of the curve (x, y).
+    """
+    return np.array([complex_points.real, complex_points.imag])
+
+
+def sequence_to_points(sequence: str, angle: float = np.pi / 2) -> np.ndarray:
     """
     Convert an L-system sequence to coordinate points using turtle graphics.
     
     Interprets the string as turtle graphics commands:
     - F, G: move forward
-    - +: turn left 90 degrees
-    - -: turn right 90 degrees
+    - +: turn left by angle
+    - -: turn right by angle
     
     Args:
         sequence: The L-system string to interpret
+        angle: The rotation angle in radians (default: π/2 for 90 degrees)
     
     Returns:
         A 2xn array defining points of the curve (x, y).
     """
-    # Direction vectors: 0=right, 1=up, 2=left, 3=down
-    directions = np.array([
-        [1, 0],   # right
-        [0, 1],   # up
-        [-1, 0],  # left
-        [0, -1]   # down
-    ])
-    
-    # Start at origin, facing right
-    position = np.array([0.0, 0.0])
-    direction = 0
-    
-    # Store all points
-    points = [position.copy()]
-    
-    for char in sequence:
-        if char == "F" or char == "G":
-            # Move forward
-            position = position + directions[direction]
-            points.append(position.copy())
-        elif char == "+":
-            # Turn left (counterclockwise)
-            direction = (direction + 1) % 4
-        elif char == "-":
-            # Turn right (clockwise)
-            direction = (direction - 1) % 4
-    
-    # Convert to 2xn array
-    points_array = np.array(points).T
-    return points_array
+    complex_points = sequence_to_complex_points(sequence, angle)
+    return complex_to_real_points(complex_points)
 
 
-def dragon_curve(iterations: int) -> np.ndarray:
+def dragon_curve(iterations: int, angle: float = np.pi / 2) -> np.ndarray:
     """
     Generate a dragon curve fractal using L-system.
     
     Args:
         iterations: Number of iterations to apply the L-system rules
+        angle: The rotation angle in radians (default: π/2 for 90 degrees)
     
     Returns:
         A 2xn array defining points of the curve (x, y).
     """
     sequence = generate_dragon_sequence(iterations)
-    return sequence_to_points(sequence)
+    return sequence_to_points(sequence, angle)
