@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import Optional
 
 
 def _plot_curve_on_axes(points: np.ndarray, axes: plt.Axes) -> None:
@@ -16,7 +15,7 @@ def _plot_curve_on_axes(points: np.ndarray, axes: plt.Axes) -> None:
     axes.axis('equal')
 
 
-def plot_curve(points: np.ndarray, axes: Optional[plt.Axes] = None, output_path: Optional[str] = None) -> None:
+def plot_curve(points: np.ndarray, axes: plt.Axes | None = None, output_path: str | None = None) -> None:
     """
     Plot a curve from coordinate points.
     
